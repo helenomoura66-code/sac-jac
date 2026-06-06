@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gerador de Reclamacao - SAC JAC</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f4f3ef;--surface:#fff;--border:#d8d6cf;--border-light:#e8e6e0;
+  --text:#1a1917;--muted:#6b6860;--hint:#9b9890;
+  --accent:#c8410a;--accent-light:#fdf0eb;
+  --info:#1a56a0;--info-light:#ebf2fc;
+  --success:#1a7a3a;--success-light:#eaf5ee;
+  --green:#128C7E;--green-light:#e8f5f3;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --r:6px;--rl:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh}
+.hdr{background:var(--text);color:#f4f3ef;padding:16px 28px;display:flex;align-items:center;gap:12px}
+.hdr-logo{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;padding:4px 10px;border-radius:3px}
+.hdr-title{font-size:15px;font-weight:500}
+.hdr-v{font-size:11px;color:#888;margin-left:auto;font-family:var(--mono)}
+.wrap{max-width:880px;margin:0 auto;padding:28px 20px 60px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:22px 26px;margin-bottom:14px}
+.sec{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px}
+.sec::before{content:'';display:inline-block;width:3px;height:11px;background:var(--accent);border-radius:2px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.fld{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.fld:last-child{margin-bottom:0}
+.lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+input,select,textarea{width:100%;border:1px solid var(--border);border-radius:var(--r);padding:8px 11px;font-size:14px;font-family:var(--sans);color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:#fff}
+textarea{resize:vertical;min-height:88px}
+.bgrp{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.tbtn{padding:6px 12px;font-size:12px;font-family:var(--mono);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--bg);color:var(--muted);font-weight:500;transition:all .15s}
+.tbtn:hover{border-color:var(--accent);color:var(--accent)}
+.tbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.dest-card{border:1px solid var(--border-light);border-radius:var(--r);padding:12px 14px;background:var(--bg);margin-bottom:8px}
+.dest-row{display:flex;gap:8px}
+.dest-row input{background:#fff;flex:1}
+.rm-btn{padding:8px 11px;font-size:12px;border:1px solid #e8c8c0;border-radius:var(--r);cursor:pointer;background:#fff8f6;color:var(--accent);font-family:var(--mono);white-space:nowrap;transition:all .15s}
+.rm-btn:hover{background:var(--accent);color:#fff}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;font-size:13px;font-family:var(--mono);font-weight:500;border:1px dashed var(--border);border-radius:var(--r);cursor:pointer;background:transparent;color:var(--muted);width:100%;transition:all .15s}
+.add-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.gen-btn{width:100%;padding:14px;font-size:14px;font-family:var(--mono);font-weight:600;letter-spacing:.04em;border:none;border-radius:var(--rl);cursor:pointer;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;transition:all .18s}
+.gen-btn:hover{background:#a33308}
+.tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{padding:10px 15px;font-size:12px;font-family:var(--mono);font-weight:500;border:none;border-bottom:2px solid transparent;cursor:pointer;background:transparent;color:var(--muted);white-space:nowrap;margin-bottom:-1px;transition:all .15s}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.twrap{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--rl) var(--rl);padding:18px 20px}
+.out{background:var(--bg);border:1px solid var(--border-light);border-radius:var(--r);padding:13px 15px;font-size:13px;font-family:var(--mono);color:var(--text);white-space:pre-wrap;line-height:1.75;min-height:60px}
+.out.spin{display:flex;align-items:center;gap:10px;color:var(--hint);font-style:italic;min-height:80px}
+.brow{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.cbtn{display:flex;align-items:center;gap:5px;padding:7px 14px;font-size:12px;font-family:var(--mono);font-weight:500;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:#fff;color:var(--text);transition:all .15s}
+.cbtn:hover{background:var(--text);color:#fff}
+.cbtn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cbtn.pri:hover{background:#a33308}
+.cbtn.grn{background:var(--success-light);color:var(--success);border-color:var(--success)}
+.ok{font-size:12px;font-family:var(--mono);color:var(--success);display:none}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tone-lbl{font-size:11px;font-family:var(--mono);color:var(--hint);margin-bottom:5px}
+.tone-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.tone-btn{padding:5px 11px;font-size:11px;font-family:var(--mono);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:#fff;color:var(--muted);font-weight:500;transition:all .15s}
+.tone-btn:hover{border-color:var(--info);color:var(--info)}
+.tone-btn.on{background:var(--info);color:#fff;border-color:var(--info)}
+.resp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.rcard{border:1px solid var(--border-light);border-radius:var(--r);background:var(--bg);overflow:hidden}
+.rch{padding:9px 13px;font-size:11px;font-family:var(--mono);font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-light)}
+.rch.wpp{background:var(--green-light);color:var(--green)}
+.rch.ra{background:#fff3e0;color:#e65100}
+.rch.eml{background:var(--info-light);color:var(--info)}
+.rcb{padding:11px 13px;font-size:12px;font-family:var(--mono);color:var(--text);white-space:pre-wrap;line-height:1.7;min-height:80px}
+.rcb.spin{display:flex;align-items:center;gap:8px;color:var(--hint);font-style:italic}
+.rcp{padding:3px 8px;font-size:11px;font-family:var(--mono);border:1px solid currentColor;border-radius:3px;cursor:pointer;background:transparent;opacity:.75}
+.rcp:hover{opacity:1}
+.rtrow{display:flex;gap:5px;padding:9px 13px;border-top:1px solid var(--border-light);flex-wrap:wrap;align-items:center}
+.rtbtn{padding:3px 9px;font-size:10px;font-family:var(--mono);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:#fff;color:var(--muted);font-weight:500;transition:all .15s}
+.rtbtn:hover{border-color:var(--accent);color:var(--accent)}
+.rtbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.rrgn{padding:3px 9px;font-size:10px;font-family:var(--mono);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--bg);color:var(--muted);font-weight:500;margin-left:auto}
+.rrgn:hover{background:var(--text);color:#fff}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:3px;background:var(--accent-light);color:#8f2d06;border:1px solid #f0c8b8;margin-left:8px;vertical-align:middle}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.res-area{margin-top:24px}
+.elbl{font-size:10px;font-family:var(--mono);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--hint);margin-bottom:5px}
+.eq-area{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px 18px;margin-top:10px}
+.eq-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.eq-title{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.eq-cnt{font-family:var(--mono);font-size:11px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:10px;margin-left:7px}
+.eq-list{font-family:var(--mono);font-size:12px;color:var(--muted);max-height:110px;overflow-y:auto}
+@media(max-width:600px){
+  .g2,.g3,.resp-grid{grid-template-columns:1fr}
+  .wrap{padding:16px 14px 40px}
+  .card{padding:16px 14px}
+  .dest-row{flex-direction:column}
+  .hdr{padding:12px 14px}
+  .hdr-v{display:none}
+}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <span class="hdr-logo">JAC</span>
+  <span class="hdr-title">Gerador de Reclamacao &mdash; SAC <span class="badge"><span class="dot"></span> IA integrada</span></span>
+  <span class="hdr-v">v5.0</span>
+</div>
+<div class="wrap">
+
+<div class="card">
+  <div class="sec">Dados do cliente</div>
+  <div class="g2">
+    <div class="fld"><label class="lbl">Nome completo</label><input id="f-nome" placeholder="Ex: Ricardo Euphrasio Macedo"/></div>
+    <div class="fld"><label class="lbl">CPF</label><input id="f-cpf" placeholder="000.000.000-00"/></div>
+    <div class="fld"><label class="lbl">Telefone</label><input id="f-tel" placeholder="(11) 99999-9999"/></div>
+    <div class="fld"><label class="lbl">ID / Protocolo</label><input id="f-id" placeholder="Ex: 247567739"/></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="sec">Dados do veiculo</div>
+  <div class="g3">
+    <div class="fld"><label class="lbl">Chassi</label><input id="f-chassi" placeholder="Ex: LJ11PABE2TC009148"/></div>
+    <div class="fld"><label class="lbl">Modelo</label><input id="f-modelo" placeholder="Ex: HUNTER"/></div>
+    <div class="fld"><label class="lbl">Placa</label><input id="f-placa" placeholder="Ex: ABC-1234"/></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="sec">Reclamacao</div>
+  <div class="fld">
+    <label class="lbl">Concessionaria</label>
+    <div class="bgrp" id="grp-conc">
+      <button type="button" class="tbtn on" data-grp="conc" data-val="CV 1">CV 1</button>
+      <button type="button" class="tbtn" data-grp="conc" data-val="CV 2">CV 2</button>
+      <button type="button" class="tbtn" data-grp="conc" data-val="CV 3">CV 3</button>
+      <button type="button" class="tbtn" data-grp="conc" data-val="BRASILIA">Brasilia</button>
+      <button type="button" class="tbtn" data-grp="conc" data-val="CURITIBA">Curitiba</button>
+      <button type="button" class="tbtn" data-grp="conc" data-val="PORTO ALEGRE">Porto Alegre</button>
+      <button type="button" class="tbtn" data-grp="conc" data-val="LIMAO">Limao</button>
+      <button type="button" class="tbtn" data-grp="conc" data-val="GASTAO VIDIGAL">Gastao Vidigal</button>
+    </div>
+  </div>
+  <div class="fld">
+    <label class="lbl">Canal de origem</label>
+    <div class="bgrp" id="grp-canal">
+      <button type="button" class="tbtn on" data-grp="canal" data-val="RECLAME AQUI">Reclame Aqui</button>
+      <button type="button" class="tbtn" data-grp="canal" data-val="WHATSAPP">WhatsApp</button>
+      <button type="button" class="tbtn" data-grp="canal" data-val="E-MAIL">E-mail</button>
+      <button type="button" class="tbtn" data-grp="canal" data-val="TELEFONE">Telefone</button>
+      <button type="button" class="tbtn" data-grp="canal" data-val="REDES SOCIAIS">Redes Sociais</button>
+      <button type="button" class="tbtn" data-grp="canal" data-val="SITE">Site</button>
+    </div>
+  </div>
+  <div class="fld">
+    <label class="lbl">Grupo WhatsApp (interno)</label>
+    <div class="bgrp" id="grp-grupo">
+      <button type="button" class="tbtn" data-grp="grupo" data-val="CV 1">CV 1</button>
+      <button type="button" class="tbtn" data-grp="grupo" data-val="CV 2">CV 2</button>
+      <button type="button" class="tbtn" data-grp="grupo" data-val="CV 3">CV 3</button>
+      <button type="button" class="tbtn" data-grp="grupo" data-val="GVI">GVI</button>
+      <button type="button" class="tbtn" data-grp="grupo" data-val="LIMAO">Limao</button>
+      <button type="button" class="tbtn" data-grp="grupo" data-val="CMF">CMF</button>
+      <button type="button" class="tbtn" data-grp="grupo" data-val="BSB">BSB</button>
+      <button type="button" class="tbtn" data-grp="grupo" data-val="POI">POI</button>
+      <button type="button" class="tbtn" data-grp="grupo" data-val="CTL">CTL</button>
+    </div>
+  </div>
+  <div class="fld">
+    <label class="lbl">Setor responsavel (Area)</label>
+    <select id="f-setor">
+      <option>VENDAS</option>
+      <option>POS-VENDA</option>
+      <option>FINANCEIRO</option>
+      <option>LOGISTICA</option>
+      <option>SEMI-NOVO</option>
+    </select>
+  </div>
+  <div class="fld">
+    <label class="lbl">Pendencias (tipo do problema)</label>
+    <select id="f-pendencias">
+      <option>Oficina</option>
+      <option>Entrega/Parcela</option>
+      <option>Documento</option>
+      <option>Pecas</option>
+      <option>Cancelamento</option>
+      <option>Devolucao Sinal</option>
+    </select>
+  </div>
+  <div class="fld">
+    <label class="lbl">Descricao da reclamacao</label>
+    <textarea id="f-desc" placeholder="Descreva o problema relatado pelo cliente..."></textarea>
+  </div>
+  <div class="fld" style="margin-bottom:0">
+    <label class="lbl">Status atual</label>
+    <select id="f-status">
+      <option>EM ANALISE</option>
+      <option>AGUARDANDO RETORNO DA CONCESSIONARIA</option>
+      <option>AGUARDANDO DOCUMENTACAO</option>
+      <option>EM TRATATIVA</option>
+      <option>RESOLVIDO</option>
+      <option>ENCERRADO SEM SOLUCAO</option>
+    </select>
+  </div>
+</div>
+
+<div class="card">
+  <div class="sec">Pessoas para acionamento</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Adicione os responsaveis. Todos serao incluidos em <strong>uma unica mensagem</strong> gerada pela IA.</p>
+  <div id="dest-list"></div>
+  <button type="button" class="add-btn" id="btn-add">+ Adicionar responsavel</button>
+</div>
+
+<button type="button" class="gen-btn" id="btn-gerar">&#x21BB; Gerar todos os templates</button>
+
+<div id="eq-wrap" style="display:none">
+  <div class="eq-area">
+    <div class="eq-hdr">
+      <div><span class="eq-title">Fila de exportacao</span><span class="eq-cnt" id="eq-cnt">0</span></div>
+      <div style="display:flex;gap:7px">
+        <button type="button" class="cbtn grn" id="btn-add-q">+ Adicionar a fila</button>
+        <button type="button" class="cbtn pri" id="btn-exp">&#8595; Exportar Excel</button>
+        <button type="button" class="cbtn" id="btn-clr-q" style="color:var(--accent);border-color:var(--accent)">Limpar</button>
+      </div>
+    </div>
+    <div class="eq-list" id="eq-list">Nenhuma reclamacao na fila.</div>
+  </div>
+</div>
+
+<div class="res-area" id="resultado" style="display:none">
+  <div class="tabs">
+    <button type="button" class="tab on" data-tab="wpp">WhatsApp</button>
+    <button type="button" class="tab" data-tab="email">E-mail</button>
+    <button type="button" class="tab" data-tab="ac">Acionamento</button>
+    <button type="button" class="tab" data-tab="resp">Resposta ao Cliente</button>
+  </div>
+  <div class="twrap">
+    <div id="panel-wpp">
+      <div class="out" id="out-wpp"></div>
+      <div class="brow">
+        <button type="button" class="cbtn pri" data-cp="out-wpp" data-fb="fb-wpp">Copiar</button>
+        <span class="ok" id="fb-wpp">Copiado!</span>
+      </div>
+    </div>
+    <div id="panel-email" style="display:none">
+      <div class="elbl">Assunto</div>
+      <div class="out" id="out-assunto" style="min-height:auto;padding:7px 11px;margin-bottom:8px"></div>
+      <div class="out" id="out-email"></div>
+      <div class="brow">
+        <button type="button" class="cbtn pri" id="btn-cp-email">Copiar e-mail</button>
+        <button type="button" class="cbtn" data-cp="out-assunto" data-fb="fb-ass">Copiar assunto</button>
+        <span class="ok" id="fb-ass">OK</span>
+        <span class="ok" id="fb-email">Copiado!</span>
+      </div>
+    </div>
+    <div id="panel-ac" style="display:none">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Mensagem unica com todos os responsaveis, gerada pela IA.</p>
+      <div class="out spin" id="out-ac"><span class="spinner"></span> Clique na aba Acionamento para gerar...</div>
+      <div style="margin-top:10px">
+        <div class="tone-lbl">Tom:</div>
+        <div class="tone-row">
+          <button type="button" class="tone-btn on" data-tom="cordial">Cordial</button>
+          <button type="button" class="tone-btn" data-tom="urgente">Urgente</button>
+          <button type="button" class="tone-btn" data-tom="formal">Formal</button>
+          <button type="button" class="tone-btn" data-tom="direto">Direto</button>
+        </div>
+      </div>
+      <div class="brow" style="margin-top:10px">
+        <button type="button" class="cbtn pri" data-cp="out-ac" data-fb="fb-ac">Copiar</button>
+        <button type="button" class="cbtn" id="btn-regen-ac">Regenerar</button>
+        <span class="ok" id="fb-ac">Copiado!</span>
+      </div>
+    </div>
+    <div id="panel-resp" style="display:none">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">Modelos gerados pela IA. Escolha o tom e copie.</p>
+      <div class="resp-grid" id="resp-grid"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+// Estado
+var sel = { conc: ["CV 1"], canal: ["RECLAME AQUI"], grupo: [] };
+var dests = [];
+var dIdx = 0;
+var acTom = "cordial";
+var acOk = false;
+var respOk = false;
+var respTons = {};
+var queue = [];
+
+// Toggle buttons via event delegation
+document.addEventListener("click", function(e) {
+  var btn = e.target;
+  if (!btn || btn.tagName !== "BUTTON") return;
+  var grp = btn.getAttribute("data-grp");
+  if (!grp) return;
+  var val = btn.getAttribute("data-val");
+  var arr = sel[grp];
+  if (!arr) return;
+  var idx = arr.indexOf(val);
+  if (btn.classList.contains("on")) {
+    if (grp === "grupo" || arr.length > 1) {
+      btn.classList.remove("on");
+      if (idx >= 0) arr.splice(idx, 1);
+    }
+  } else {
+    if (grp === "grupo") {
+      document.querySelectorAll("[data-grp='grupo']").forEach(function(b) { b.classList.remove("on"); });
+      arr.length = 0;
+    }
+    btn.classList.add("on");
+    arr.push(val);
+  }
+});
+
+// Tabs
+document.querySelectorAll(".tab").forEach(function(t) {
+  t.addEventListener("click", function() {
+    var tab = this.getAttribute("data-tab");
+    document.querySelectorAll(".tab").forEach(function(x) { x.classList.remove("on"); });
+    this.classList.add("on");
+    ["wpp","email","ac","resp"].forEach(function(p) {
+      var el = document.getElementById("panel-" + p);
+      if (el) el.style.display = p === tab ? "" : "none";
+    });
+    if (tab === "ac" && !acOk) { acOk = true; gerarAc(); }
+    if (tab === "resp" && !respOk) { respOk = true; gerarResps(); }
+  });
+});
+
+// Copy buttons
+document.addEventListener("click", function(e) {
+  var btn = e.target;
+  if (!btn || btn.tagName !== "BUTTON") return;
+  var cp = btn.getAttribute("data-cp");
+  if (!cp) return;
+  var el = document.getElementById(cp);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent || "").then(function() {
+    var fb = document.getElementById(btn.getAttribute("data-fb"));
+    if (fb) { fb.style.display = "inline"; setTimeout(function() { fb.style.display = "none"; }, 2000); }
+  });
+});
+
+document.getElementById("btn-cp-email").addEventListener("click", function() {
+  var ass = (document.getElementById("out-assunto") || {}).textContent || "";
+  var body = (document.getElementById("out-email") || {}).textContent || "";
+  navigator.clipboard.writeText("Assunto: " + ass + "\n\n" + body).then(function() {
+    var fb = document.getElementById("fb-email");
+    if (fb) { fb.style.display = "inline"; setTimeout(function() { fb.style.display = "none"; }, 2000); }
+  });
+});
+
+// Tone buttons
+document.querySelectorAll(".tone-btn").forEach(function(b) {
+  b.addEventListener("click", function() {
+    acTom = this.getAttribute("data-tom");
+    document.querySelectorAll(".tone-btn").forEach(function(x) { x.classList.remove("on"); });
+    this.classList.add("on");
+  });
+});
+
+document.getElementById("btn-regen-ac").addEventListener("click", function() {
+  acOk = true; gerarAc();
+});
+
+// Dest list
+function renderDests() {
+  var c = document.getElementById("dest-list");
+  c.innerHTML = "";
+  dests.forEach(function(d) {
+    var card = document.createElement("div");
+    card.className = "dest-card";
+    var row = document.createElement("div");
+    row.className = "dest-row";
+    var inN = document.createElement("input");
+    inN.type = "text"; inN.placeholder = "Nome (ex: Janderson)"; inN.value = d.nome;
+    inN.oninput = (function(id) { return function() { dests.forEach(function(x) { if (x.id === id) x.nome = this.value; }.bind(this)); }; })(d.id);
+    var inC = document.createElement("input");
+    inC.type = "text"; inC.placeholder = "Cargo / area (ex: Autorizada)"; inC.value = d.cargo;
+    inC.oninput = (function(id) { return function() { dests.forEach(function(x) { if (x.id === id) x.cargo = this.value; }.bind(this)); }; })(d.id);
+    var rm = document.createElement("button");
+    rm.type = "button"; rm.className = "rm-btn"; rm.textContent = "X";
+    rm.onclick = (function(id) { return function() { dests = dests.filter(function(x) { return x.id !== id; }); renderDests(); }; })(d.id);
+    row.appendChild(inN); row.appendChild(inC); row.appendChild(rm);
+    card.appendChild(row); c.appendChild(card);
+  });
+}
+
+document.getElementById("btn-add").addEventListener("click", function() {
+  dIdx++; dests.push({ id: dIdx, nome: "", cargo: "" }); renderDests();
+});
+
+// Helpers
+function fv(id) { var e = document.getElementById(id); return e ? e.value.trim() : ""; }
+function hoje() { return new Date().toLocaleDateString("pt-BR"); }
+
+// GERAR
+document.getElementById("btn-gerar").addEventListener("click", function() {
+  if (!sel.conc.length) { alert("Selecione uma Concessionaria!"); return; }
+  if (!sel.canal.length) { alert("Selecione um Canal de Origem!"); return; }
+
+  var nome = fv("f-nome") || "NAO INFORMADO";
+  var cpf = fv("f-cpf") || "NAO INFORMADO";
+  var tel = fv("f-tel") || "NAO INFORMADO";
+  var id = fv("f-id") || "NAO INFORMADO";
+  var chassi = fv("f-chassi") || "NAO INFORMADO";
+  var modelo = fv("f-modelo") || "NAO INFORMADO";
+  var placa = fv("f-placa") || "NAO INFORMADO";
+  var desc = fv("f-desc") || "NAO INFORMADO";
+  var setor = fv("f-setor");
+  var status = fv("f-status");
+  var conc = sel.conc.join(" / ");
+  var canal = sel.canal.join(" / ");
+  var data = hoje();
+
+  var corpo = "*SAC JAC - " + setor + " - " + conc + " - " + canal + "*\n\n"
+    + "*Nome:* " + nome + "\n"
+    + "*CPF:* " + cpf + "\n"
+    + "*Tel:* " + tel + "\n"
+    + "*Chassi:* " + chassi + "\n"
+    + "*Placa:* " + placa + "\n"
+    + "*Modelo:* " + modelo + "\n"
+    + "*ID:* " + id + "\n"
+    + "*Data:* " + data + "\n\n"
+    + "*RECLAMACAO:*\n" + desc + "\n\n"
+    + "*STATUS:* " + status;
+
+  document.getElementById("out-wpp").textContent = corpo;
+  document.getElementById("out-assunto").textContent = "[SAC JAC] Reclamacao " + id + " - " + nome + " | " + modelo + " | " + conc;
+  document.getElementById("out-email").textContent = corpo;
+
+  acOk = false; respOk = false;
+  var outAc = document.getElementById("out-ac");
+  outAc.className = "out spin";
+  outAc.innerHTML = '<span class="spinner"></span> Clique na aba Acionamento para gerar...';
+  document.getElementById("resp-grid").innerHTML = "";
+
+  document.getElementById("resultado").style.display = "";
+  document.getElementById("eq-wrap").style.display = "";
+  updateQueue();
+
+  document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("on"); });
+  document.querySelector(".tab[data-tab='wpp']").classList.add("on");
+  ["wpp","email","ac","resp"].forEach(function(p) {
+    var el = document.getElementById("panel-" + p);
+    if (el) el.style.display = p === "wpp" ? "" : "none";
+  });
+
+  document.getElementById("resultado").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+// API
+function callAI(prompt, maxTok, cb) {
+  fetch("/.netlify/functions/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "gpt-4o", max_tokens: maxTok, messages: [{ role: "user", content: prompt }] })
+  })
+  .then(function(r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+  .then(function(d) {
+    if (d.error) throw new Error(d.error.message || "API error");
+    var txt = "";
+    if (d.content) d.content.forEach(function(b) { if (b.type === "text") txt += b.text; });
+    cb(null, txt || "Resposta vazia.");
+  })
+  .catch(function(e) { cb(e, null); });
+}
+
+// Acionamento
+function gerarAc() {
+  var box = document.getElementById("out-ac");
+  box.className = "out spin";
+  box.innerHTML = '<span class="spinner"></span> Gerando com IA...';
+  var nomes = dests.filter(function(d) { return d.nome; }).map(function(d) { return d.nome + (d.cargo ? " (" + d.cargo + ")" : ""); }).join(", ");
+  var grupo = sel.grupo.length > 0 ? "SAC JAC - " + sel.grupo[0] : "";
+  var canal = sel.canal.join(" / ");
+  var conc = sel.conc.join(" / ");
+  var tomsMap = { cordial: "educada e colaborativa", urgente: "urgente e seria sem ser agressiva", formal: "formal e profissional", direto: "direta e objetiva, curta" };
+  var prompt = "Voce e um analista de SAC da JAC Motors Brasil.\n"
+    + "Gere UMA mensagem de acionamento via WhatsApp" + (grupo ? " para o grupo " + grupo : "") + ".\n"
+    + "Destinatarios: " + (nomes || "equipe responsavel") + ".\n\n"
+    + "Contexto:\n"
+    + "- Cliente: " + (fv("f-nome") || "cliente") + "\n"
+    + "- Veiculo: " + (fv("f-modelo") || "veiculo") + (fv("f-placa") ? " | Placa: " + fv("f-placa") : "") + "\n"
+    + "- Concessionaria: " + conc + "\n"
+    + "- Canal: " + canal + "\n"
+    + "- Protocolo: " + (fv("f-id") || "") + "\n"
+    + "- Reclamacao: " + (fv("f-desc") || "") + "\n\n"
+    + "Tom: " + (tomsMap[acTom] || "cordial") + ".\n"
+    + "Regras: comece saudando todos pelo nome; mencione o canal; resuma em 1 frase; peca posicionamento; maximo 6 linhas; sem asteriscos ou markdown; nao use Atenciosamente.";
+  callAI(prompt, 350, function(err, txt) {
+    box.className = "out";
+    box.textContent = err ? "Erro ao conectar com a IA." : txt;
+  });
+}
+
+// Respostas
+var MODELOS = [
+  { id: "wpp_emp", label: "WhatsApp - Empatia", cls: "wpp", tom: "empatica, humana e acolhedora" },
+  { id: "wpp_res", label: "WhatsApp - Resolucao", cls: "wpp", tom: "focada em solucao e proativa" },
+  { id: "ra_pub", label: "Reclame Aqui - Publica", cls: "ra", tom: "profissional e publica, foco em reputacao" },
+  { id: "eml_for", label: "E-mail - Formal", cls: "eml", tom: "formal e corporativa, comprometida" }
+];
+
+function gerarResps() {
+  var grid = document.getElementById("resp-grid");
+  grid.innerHTML = "";
+  var nome = fv("f-nome") || "cliente";
+  var modelo = fv("f-modelo") || "veiculo";
+  var desc = fv("f-desc") || "";
+  var status = fv("f-status");
+  var conc = sel.conc.join(" / ");
+  var canal = sel.canal.join(" / ");
+  MODELOS.forEach(function(m) {
+    respTons[m.id] = m.tom;
+    var card = document.createElement("div");
+    card.className = "rcard";
+    var hdr = document.createElement("div");
+    hdr.className = "rch " + m.cls;
+    var lbl = document.createElement("span");
+    lbl.textContent = m.label;
+    var cpBtn = document.createElement("button");
+    cpBtn.type = "button"; cpBtn.className = "rcp"; cpBtn.textContent = "Copiar";
+    cpBtn.setAttribute("data-rid", m.id);
+    hdr.appendChild(lbl); hdr.appendChild(cpBtn);
+    var body = document.createElement("div");
+    body.className = "rcb spin"; body.id = "rb-" + m.id;
+    body.innerHTML = '<span class="spinner"></span> Gerando...';
+    var trow = document.createElement("div");
+    trow.className = "rtrow";
+    ["Original","+ Formal","+ Curta","+ Empatica"].forEach(function(t, i) {
+      var tb = document.createElement("button");
+      tb.type = "button"; tb.className = "rtbtn" + (i === 0 ? " on" : "");
+      tb.textContent = t; tb.setAttribute("data-rid", m.id);
+      var toms = [m.tom, "mais formal e corporativa", "mais curta e direta", "mais empatica e humana"];
+      tb.setAttribute("data-tom", toms[i]);
+      trow.appendChild(tb);
+    });
+    var rgn = document.createElement("button");
+    rgn.type = "button"; rgn.className = "rrgn"; rgn.textContent = "Regenerar";
+    rgn.setAttribute("data-rid", m.id); rgn.setAttribute("data-regen", "1");
+    trow.appendChild(rgn);
+    card.appendChild(hdr); card.appendChild(body); card.appendChild(trow);
+    grid.appendChild(card);
+    gerarUmaResp(m.id, nome, modelo, desc, status, conc, canal, m.tom);
+  });
+  grid.addEventListener("click", function(e) {
+    var btn = e.target;
+    if (!btn || btn.tagName !== "BUTTON") return;
+    var rid = btn.getAttribute("data-rid");
+    if (!rid) return;
+    var n = fv("f-nome") || "cliente";
+    var mo = fv("f-modelo") || "veiculo";
+    var de = fv("f-desc") || "";
+    var st = fv("f-status");
+    var co = sel.conc.join(" / ");
+    var ca = sel.canal.join(" / ");
+    if (btn.classList.contains("rcp")) {
+      var bel = document.getElementById("rb-" + rid);
+      if (bel) navigator.clipboard.writeText(bel.textContent || "");
+      return;
+    }
+    if (btn.getAttribute("data-regen")) {
+      gerarUmaResp(rid, n, mo, de, st, co, ca, respTons[rid] || "");
+      return;
+    }
+    if (btn.classList.contains("rtbtn")) {
+      var tom = btn.getAttribute("data-tom");
+      respTons[rid] = tom;
+      btn.closest(".rtrow").querySelectorAll(".rtbtn").forEach(function(b) { b.classList.remove("on"); });
+      btn.classList.add("on");
+      gerarUmaResp(rid, n, mo, de, st, co, ca, tom);
+    }
+  });
+}
+
+function gerarUmaResp(id, nome, modelo, desc, status, conc, canal, tom) {
+  var box = document.getElementById("rb-" + id);
+  if (!box) return;
+  box.className = "rcb spin";
+  box.innerHTML = '<span class="spinner"></span> Gerando...';
+  var ehRA = id.indexOf("ra") >= 0;
+  var ehEmail = id.indexOf("eml") >= 0;
+  var prompt = "Voce e um analista de SAC da JAC Motors Brasil respondendo ao cliente.\n\n"
+    + "Dados:\n- Cliente: " + nome + "\n- Veiculo: " + modelo + "\n- Concessionaria: " + conc
+    + "\n- Canal: " + canal + "\n- Reclamacao: " + desc + "\n- Status: " + status + "\n\n"
+    + "Gere UMA resposta " + (ehRA ? "publica para o Reclame Aqui" : ehEmail ? "por e-mail" : "por WhatsApp")
+    + " com tom " + tom + ".\n"
+    + "Regras: " + (ehEmail ? "comece com Prezado(a) [Nome]," : "comece com o primeiro nome do cliente") + "; "
+    + "reconheca o problema; mostre que o caso esta sendo tratado; "
+    + (ehRA ? "convide para contato privado;" : "forneca proximo passo concreto;") + " "
+    + (ehEmail ? "5 a 8 linhas;" : "3 a 5 linhas;") + " sem asteriscos ou markdown; "
+    + (ehEmail ? "termine com: Atenciosamente, Equipe SAC JAC Motors" : "termine de forma cordial");
+  callAI(prompt, 400, function(err, txt) {
+    box.className = "rcb";
+    box.textContent = err ? "Erro de conexao com a IA." : txt;
+  });
+}
+
+// Queue / Export
+function plat() {
+  var pub = ["RECLAME AQUI", "REDES SOCIAIS"];
+  for (var i = 0; i < sel.canal.length; i++) { if (pub.indexOf(sel.canal[i]) >= 0) return "Publica"; }
+  return "SAC";
+}
+function updateQueue() {
+  var cnt = document.getElementById("eq-cnt");
+  var lst = document.getElementById("eq-list");
+  if (cnt) cnt.textContent = queue.length;
+  if (!lst) return;
+  if (!queue.length) { lst.textContent = "Nenhuma reclamacao na fila."; return; }
+  lst.innerHTML = queue.map(function(r, i) {
+    return "<div style='padding:3px 0;border-bottom:1px solid var(--border-light)'>" + (i+1) + ". " + r.Cliente + " - " + r.MODELO + " - " + r.LOJA + " <span style='color:var(--accent);cursor:pointer' onclick='removeQ(" + i + ")'>X</span></div>";
+  }).join("");
+}
+window.removeQ = function(i) { queue.splice(i, 1); updateQueue(); };
+document.getElementById("btn-add-q").addEventListener("click", function() {
+  queue.push({
+    PLATAFORMA: plat(),
+    "Mes avaliado": "Sem avaliacao",
+    "Nota Avaliada": "Sem avaliacao",
+    Cliente: fv("f-nome") || "NAO INFORMADO",
+    STATUS: fv("f-status") || "EM ANALISE",
+    "Data Cadastro": hoje(),
+    LOJA: sel.conc.join(" / "),
+    PENDENCIAS: fv("f-pendencias") || "",
+    Area: fv("f-setor") || "",
+    PLACA: fv("f-placa") || "",
+    MODELO: fv("f-modelo") || "",
+    QUANTIDADE: 1
+  });
+  updateQueue();
+});
+document.getElementById("btn-clr-q").addEventListener("click", function() { queue = []; updateQueue(); });
+document.getElementById("btn-exp").addEventListener("click", function() {
+  if (!queue.length) { alert("Adicione pelo menos uma reclamacao a fila!"); return; }
+  var cols = ["PLATAFORMA","Mes avaliado","Nota Avaliada","Cliente","STATUS","Data Cadastro","LOJA","PENDENCIAS","Area","PLACA","MODELO","QUANTIDADE"];
+  var rows = [cols.join("\t")];
+  queue.forEach(function(r) { rows.push(cols.map(function(c) { return r[c] || ""; }).join("\t")); });
+  var blob = new Blob([rows.join("\n")], { type: "text/tab-separated-values;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "reclamacoes_" + hoje().replace(/\//g, "-") + ".tsv";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// Init dest
+dIdx++; dests.push({ id: dIdx, nome: "", cargo: "" }); renderDests();
+</script>
+</body>
+</html>

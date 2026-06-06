@@ -47,6 +47,16 @@ textarea{resize:vertical;min-height:88px}
 .add-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 .gen-btn{width:100%;padding:14px;font-size:14px;font-family:var(--mono);font-weight:600;letter-spacing:.04em;border:none;border-radius:var(--rl);cursor:pointer;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;transition:all .18s}
 .gen-btn:hover{background:#a33308}
+.imp-area{border:2px dashed var(--border);border-radius:var(--r);padding:14px;background:var(--bg);transition:border-color .2s}
+.imp-area:focus-within{border-color:var(--accent)}
+.imp-textarea{width:100%;min-height:110px;border:none;background:transparent;resize:vertical;font-size:13px;font-family:var(--sans);color:var(--text);outline:none}
+.imp-btn{padding:9px 18px;font-size:12px;font-family:var(--mono);font-weight:600;border:none;border-radius:var(--r);cursor:pointer;background:var(--accent);color:#fff;transition:all .15s;display:flex;align-items:center;gap:6px}
+.imp-btn:hover{background:#a33308}
+.imp-btn:disabled{background:var(--muted);cursor:not-allowed}
+.imp-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.imp-status{font-size:12px;font-family:var(--mono);color:var(--muted)}
+.imp-status.ok{color:var(--success)}
+.imp-status.err{color:var(--accent)}
 .tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
 .tab{padding:10px 15px;font-size:12px;font-family:var(--mono);font-weight:500;border:none;border-bottom:2px solid transparent;cursor:pointer;background:transparent;color:var(--muted);white-space:nowrap;margin-bottom:-1px;transition:all .15s}
 .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
@@ -110,6 +120,18 @@ textarea{resize:vertical;min-height:88px}
   <span class="hdr-v">v5.0</span>
 </div>
 <div class="wrap">
+
+<div class="card">
+  <div class="sec">&#128203; Importar conversa (WhatsApp / E-mail / Mobiauto)</div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">Cole o texto da conversa abaixo. A IA vai extrair automaticamente os dados e preencher os campos do formulario.</p>
+  <div class="imp-area">
+    <textarea class="imp-textarea" id="imp-texto" placeholder="Cole aqui a conversa do WhatsApp, e-mail ou mensagem do Mobiauto..."></textarea>
+  </div>
+  <div class="imp-row">
+    <button type="button" class="imp-btn" id="btn-importar">&#10024; Extrair e preencher campos</button>
+    <span class="imp-status" id="imp-status"></span>
+  </div>
+</div>
 
 <div class="card">
   <div class="sec">Dados do cliente</div>
@@ -284,6 +306,76 @@ textarea{resize:vertical;min-height:88px}
 
 </div>
 <script>
+// Importar conversa
+document.getElementById("btn-importar").addEventListener("click", function() {
+  var texto = document.getElementById("imp-texto").value.trim();
+  if (!texto) { alert("Cole uma conversa antes de importar!"); return; }
+  var btn = document.getElementById("btn-importar");
+  var status = document.getElementById("imp-status");
+  btn.disabled = true;
+  btn.textContent = "Extraindo...";
+  status.className = "imp-status";
+  status.textContent = "Analisando conversa com IA...";
+
+  var prompt = "Analise a seguinte conversa/mensagem de atendimento e extraia as informacoes do cliente e do veiculo.\n"
+    + "Responda APENAS com um JSON valido, sem markdown, sem explicacoes, somente o JSON.\n"
+    + "Use exatamente estas chaves (deixe vazio string vazia se nao encontrar):\n"
+    + "{ \"nome\": \"\", \"cpf\": \"\", \"telefone\": \"\", \"protocolo\": \"\", \"chassi\": \"\", \"modelo\": \"\", \"placa\": \"\","
+    + " \"descricao\": \"resumo claro do problema em 2 a 4 linhas\","
+    + " \"canal\": \"WHATSAPP ou E-MAIL ou MOBIAUTO ou RECLAME AQUI ou TELEFONE\","
+    + " \"setor\": \"VENDAS ou POS-VENDA ou FINANCEIRO ou LOGISTICA ou SEMI-NOVO\","
+    + " \"pendencia\": \"Oficina ou Entrega/Parcela ou Documento ou Pecas ou Cancelamento ou Devolucao Sinal\" }\n\n"
+    + "CONVERSA:\n" + texto;
+
+  callAI(prompt, 600, function(err, txt) {
+    btn.disabled = false;
+    btn.innerHTML = "&#10024; Extrair e preencher campos";
+    if (err) {
+      status.className = "imp-status err";
+      status.textContent = "Erro: " + err.message;
+      return;
+    }
+    try {
+      var clean = txt.replace(/```json|```/g, "").trim();
+      var d = JSON.parse(clean);
+      if (d.nome)      document.getElementById("f-nome").value = d.nome;
+      if (d.cpf)       document.getElementById("f-cpf").value = d.cpf;
+      if (d.telefone)  document.getElementById("f-tel").value = d.telefone;
+      if (d.protocolo) document.getElementById("f-id").value = d.protocolo;
+      if (d.chassi)    document.getElementById("f-chassi").value = d.chassi;
+      if (d.modelo)    document.getElementById("f-modelo").value = d.modelo;
+      if (d.placa)     document.getElementById("f-placa").value = d.placa;
+      if (d.descricao) document.getElementById("f-desc").value = d.descricao;
+      if (d.canal) {
+        var canalMap = { "WHATSAPP":"WHATSAPP","E-MAIL":"E-MAIL","MOBIAUTO":"SITE","RECLAME AQUI":"RECLAME AQUI","TELEFONE":"TELEFONE" };
+        var canalVal = canalMap[d.canal.toUpperCase()] || d.canal.toUpperCase();
+        sel.canal = [];
+        document.querySelectorAll("[data-grp='canal']").forEach(function(b) {
+          b.classList.remove("on");
+          if (b.getAttribute("data-val") === canalVal) { b.classList.add("on"); sel.canal.push(canalVal); }
+        });
+      }
+      if (d.setor) {
+        var setorEl = document.getElementById("f-setor");
+        for (var i = 0; i < setorEl.options.length; i++) {
+          if (setorEl.options[i].value.toUpperCase().indexOf(d.setor.toUpperCase()) >= 0) { setorEl.selectedIndex = i; break; }
+        }
+      }
+      if (d.pendencia) {
+        var pendEl = document.getElementById("f-pendencias");
+        for (var j = 0; j < pendEl.options.length; j++) {
+          if (pendEl.options[j].value.toLowerCase().indexOf(d.pendencia.toLowerCase()) >= 0) { pendEl.selectedIndex = j; break; }
+        }
+      }
+      status.className = "imp-status ok";
+      status.textContent = "\u2713 Campos preenchidos! Confira e ajuste se necessario.";
+    } catch(e) {
+      status.className = "imp-status err";
+      status.textContent = "Erro ao interpretar resposta da IA. Tente novamente.";
+    }
+  });
+});
+
 // Estado
 var sel = { conc: ["CV 1"], canal: ["RECLAME AQUI"], grupo: [] };
 var dests = [];

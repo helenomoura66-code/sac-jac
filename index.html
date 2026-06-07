@@ -669,18 +669,37 @@ document.getElementById("btn-importar").addEventListener("click", function() {
       if (d.chassi)    document.getElementById("f-chassi").value = d.chassi;
       if (d.modelo) {
         var selModelo = document.getElementById("f-modelo");
-        var modeloNorm = d.modelo.trim();
+        var modeloNorm = d.modelo.trim().toLowerCase().replace(/[\s\-\.]/g, "");
+        // Aliases para variações comuns
+        var aliases = {
+          "ejs1ext": "E-JS1 EXT", "ejs1xt": "E-JS1 EXT", "js1ext": "E-JS1 EXT",
+          "ejs1": "E-JS1", "js1": "E-JS1", "e-js1": "E-JS1",
+          "ejs4": "E-JS4", "js4": "E-JS4", "e-js4": "E-JS4",
+          "ej7": "E-J7", "ej7": "E-J7", "e-j7": "E-J7", "j7": "E-J7",
+          "hunter": "Hunter", "hunterhd": "Hunter", "hunterhd4x4": "Hunter",
+          "iev40f": "iEV40F", "iev40": "iEV40F",
+          "iev50f": "iEV50F", "iev50": "iEV50F"
+        };
         var found = false;
-        for (var k = 0; k < selModelo.options.length; k++) {
-          if (selModelo.options[k].value.toLowerCase() === modeloNorm.toLowerCase()) {
-            selModelo.selectedIndex = k; found = true; break;
+        // 1. Tenta alias direto
+        if (aliases[modeloNorm]) {
+          var alvo = aliases[modeloNorm];
+          for (var k = 0; k < selModelo.options.length; k++) {
+            if (selModelo.options[k].value === alvo) { selModelo.selectedIndex = k; found = true; break; }
           }
         }
+        // 2. Match exato normalizado
         if (!found) {
-          // tenta match parcial
+          for (var k = 0; k < selModelo.options.length; k++) {
+            var optNorm = selModelo.options[k].value.toLowerCase().replace(/[\s\-\.]/g, "");
+            if (optNorm === modeloNorm) { selModelo.selectedIndex = k; found = true; break; }
+          }
+        }
+        // 3. Match parcial normalizado
+        if (!found) {
           for (var k2 = 0; k2 < selModelo.options.length; k2++) {
-            if (selModelo.options[k2].value.toLowerCase().indexOf(modeloNorm.toLowerCase()) >= 0 ||
-                modeloNorm.toLowerCase().indexOf(selModelo.options[k2].value.toLowerCase()) >= 0) {
+            var optNorm2 = selModelo.options[k2].value.toLowerCase().replace(/[\s\-\.]/g, "");
+            if (optNorm2.indexOf(modeloNorm) >= 0 || modeloNorm.indexOf(optNorm2) >= 0) {
               selModelo.selectedIndex = k2; found = true; break;
             }
           }

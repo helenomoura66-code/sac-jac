@@ -16,12 +16,35 @@
   --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
   --r:6px;--rl:10px;
 }
+[data-theme="dark"]{
+  --bg:#1c1a18;--surface:#252320;--border:#3a3835;--border-light:#2e2c2a;
+  --text:#f0ede8;--muted:#9b9890;--hint:#6b6860;
+  --accent:#e05a20;--accent-light:#2a1a10;
+  --info:#4a8fd0;--info-light:#0e1e2e;
+  --success:#2a9a4a;--success-light:#0e2016;
+  --green:#1aaa98;--green-light:#0a1e1c;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh}
 .hdr{background:var(--text);color:#f4f3ef;padding:16px 28px;display:flex;align-items:center;gap:12px}
 .hdr-logo{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:#fff;padding:4px 10px;border-radius:3px}
 .hdr-title{font-size:15px;font-weight:500}
 .hdr-v{font-size:11px;color:#888;margin-left:auto;font-family:var(--mono)}
+.dark-btn{background:none;border:1px solid rgba(255,255,255,.2);color:#ccc;font-size:13px;padding:5px 10px;border-radius:var(--r);cursor:pointer;transition:all .2s;margin-left:8px}
+.dark-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.exp-badge{background:var(--accent);color:#fff;font-size:10px;font-weight:700;font-family:var(--mono);padding:2px 6px;border-radius:10px;margin-left:6px;display:none}
+.exp-badge.show{display:inline}
+.char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:3px;font-family:var(--mono)}
+.char-count.warn{color:#c8410a;font-weight:600}
+.hist-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.hist-card:hover{border-color:var(--accent)}
+.hist-nome{font-size:13px;font-weight:600;color:var(--text)}
+.hist-info{font-size:11px;color:var(--muted);margin-top:3px}
+.hist-vazio{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.cp-all-btn{padding:9px 14px;font-size:12px;font-family:var(--mono);font-weight:600;border:none;border-radius:var(--r);cursor:pointer;background:var(--green);color:#fff;transition:all .15s}
+.cp-all-btn:hover{opacity:.85}
+.limpar-btn{padding:7px 14px;font-size:12px;font-family:var(--mono);font-weight:600;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--surface);color:var(--muted);transition:all .15s}
+.limpar-btn:hover{border-color:var(--accent);color:var(--accent)}
 .wrap{max-width:880px;margin:0 auto;padding:28px 20px 60px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:22px 26px;margin-bottom:14px}
 .sec{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px}
@@ -191,7 +214,8 @@ textarea{resize:vertical;min-height:88px}
 <div class="hdr">
   <span class="hdr-logo">JAC</span>
   <span class="hdr-title">Gerador de Reclamacao &mdash; SAC <span class="badge"><span class="dot"></span> IA integrada</span></span>
-  <span class="hdr-v">v5.0</span>
+  <span class="hdr-v">v6.0 — Jun/2026</span>
+  <button type="button" class="dark-btn" id="btn-dark" title="Alternar tema">🌙</button>
 </div>
 <div class="wrap">
 
@@ -307,7 +331,8 @@ textarea{resize:vertical;min-height:88px}
   </div>
   <div class="fld">
     <label class="lbl">Descricao da reclamacao</label>
-    <textarea id="f-desc" placeholder="Descreva o problema relatado pelo cliente..."></textarea>
+    <textarea id="f-desc" placeholder="Descreva o problema relatado pelo cliente..." maxlength="1000"></textarea>
+    <div class="char-count" id="char-desc">0 / 1000</div>
   </div>
   <div class="fld" style="margin-bottom:0">
     <label class="lbl">Status atual</label>
@@ -329,6 +354,7 @@ textarea{resize:vertical;min-height:88px}
   <button type="button" class="add-btn" id="btn-add">+ Adicionar responsavel</button>
 </div>
 
+<button type="button" class="limpar-btn" id="btn-limpar" style="width:100%;margin-top:6px">🗑️ Limpar formulário</button>
 <button type="button" class="gen-btn" id="btn-gerar">&#x21BB; Gerar todos os templates</button>
 
 <div id="eq-wrap" style="display:none">
@@ -337,7 +363,7 @@ textarea{resize:vertical;min-height:88px}
       <div><span class="eq-title">Fila de exportacao</span><span class="eq-cnt" id="eq-cnt">0</span></div>
       <div style="display:flex;gap:7px">
         <button type="button" class="cbtn grn" id="btn-add-q">+ Adicionar a fila</button>
-        <button type="button" class="cbtn pri" id="btn-exp">&#8595; Exportar Excel</button>
+        <button type="button" class="cbtn pri" id="btn-exp">&#8595; Exportar Excel <span class="exp-badge" id="exp-badge">0</span></button>
         <button type="button" class="cbtn" id="btn-clr-q" style="color:var(--accent);border-color:var(--accent)">Limpar</button>
       </div>
     </div>
@@ -354,12 +380,14 @@ textarea{resize:vertical;min-height:88px}
     <button type="button" class="tab" data-tab="gar">🛡️ Garantia</button>
     <button type="button" class="tab" data-tab="unid">📍 Unidades</button>
     <button type="button" class="tab" data-tab="cred">🔧 Credenciadas</button>
+    <button type="button" class="tab" data-tab="hist">📜 Histórico</button>
   </div>
   <div class="twrap">
     <div id="panel-wpp">
       <div class="out" id="out-wpp"></div>
       <div class="brow">
         <button type="button" class="cbtn pri" data-cp="out-wpp" data-fb="fb-wpp">Copiar</button>
+        <button type="button" class="cp-all-btn" id="btn-cp-all-wpp">📋 Copiar Empatia + Resolução</button>
         <span class="ok" id="fb-wpp">Copiado!</span>
       </div>
     </div>
@@ -478,6 +506,13 @@ textarea{resize:vertical;min-height:88px}
       </div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Mostrando <span id="cred-count">0</span> credenciadas</div>
       <div class="unid-grid" id="cred-grid"></div>
+    </div>
+    <div id="panel-hist" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:12px;color:var(--muted);font-family:var(--mono)">Últimas 5 reclamações desta sessão</span>
+        <button type="button" class="limpar-btn" id="btn-limpar-hist">Limpar histórico</button>
+      </div>
+      <div id="hist-list"><div class="hist-vazio">Nenhuma reclamação gerada ainda nesta sessão.</div></div>
     </div>
 
 </div>
@@ -805,6 +840,133 @@ document.getElementById("btn-importar").addEventListener("click", function() {
   });
 });
 
+// ═══════════════════════════════════
+// DARK MODE
+// ═══════════════════════════════════
+(function() {
+  var saved = localStorage.getItem("sac-theme") || "light";
+  if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+  document.getElementById("btn-dark").textContent = saved === "dark" ? "☀️" : "🌙";
+})();
+document.getElementById("btn-dark").addEventListener("click", function() {
+  var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  document.documentElement.setAttribute("data-theme", isDark ? "" : "dark");
+  localStorage.setItem("sac-theme", isDark ? "light" : "dark");
+  this.textContent = isDark ? "🌙" : "☀️";
+});
+
+// ═══════════════════════════════════
+// LIMPAR FORMULÁRIO
+// ═══════════════════════════════════
+document.getElementById("btn-limpar").addEventListener("click", function() {
+  if (!confirm("Deseja limpar todos os campos do formulário?")) return;
+  ["f-nome","f-cpf","f-tel","f-id","f-chassi","f-placa","f-desc"].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  var selModelo = document.getElementById("f-modelo");
+  if (selModelo) selModelo.selectedIndex = 0;
+  document.getElementById("gar-painel").classList.remove("show");
+  document.getElementById("char-desc").textContent = "0 / 1000";
+  document.getElementById("char-desc").className = "char-count";
+  sel.conc = ["CV 1"]; sel.canal = ["RECLAME AQUI"]; sel.grupo = [];
+  document.querySelectorAll("[data-grp]").forEach(function(b) {
+    b.classList.remove("on");
+    if ((b.getAttribute("data-grp") === "conc" && b.getAttribute("data-val") === "CV 1") ||
+        (b.getAttribute("data-grp") === "canal" && b.getAttribute("data-val") === "RECLAME AQUI")) {
+      b.classList.add("on");
+    }
+  });
+  document.getElementById("f-setor").selectedIndex = 0;
+  document.getElementById("f-pendencias").selectedIndex = 0;
+  document.getElementById("f-status").selectedIndex = 0;
+});
+
+// ═══════════════════════════════════
+// CONTADOR DE CARACTERES
+// ═══════════════════════════════════
+document.getElementById("f-desc").addEventListener("input", function() {
+  var len = this.value.length;
+  var el = document.getElementById("char-desc");
+  el.textContent = len + " / 1000";
+  el.className = "char-count" + (len > 800 ? " warn" : "");
+});
+
+// ═══════════════════════════════════
+// COPIAR EMPATIA + RESOLUÇÃO
+// ═══════════════════════════════════
+document.getElementById("btn-cp-all-wpp").addEventListener("click", function() {
+  var empatia = document.getElementById("out-wpp") ? document.getElementById("out-wpp").innerText : "";
+  var resolucao = document.getElementById("out-wpp2") ? document.getElementById("out-wpp2").innerText : "";
+  if (!empatia && !resolucao) { alert("Gere os templates primeiro!"); return; }
+  // Buscar nos cards de resposta ao cliente
+  var cards = document.querySelectorAll(".resp-card");
+  var textos = [];
+  cards.forEach(function(c) {
+    var titulo = c.querySelector(".resp-title") ? c.querySelector(".resp-title").textContent : "";
+    if (titulo.indexOf("WHATSAPP") >= 0) {
+      var out = c.querySelector(".out");
+      if (out) textos.push("--- " + titulo + " ---\n" + out.innerText);
+    }
+  });
+  var texto = textos.length > 0 ? textos.join("\n\n") : empatia;
+  navigator.clipboard.writeText(texto).then(function() {
+    var btn = document.getElementById("btn-cp-all-wpp");
+    btn.textContent = "✅ Copiado!";
+    setTimeout(function() { btn.textContent = "📋 Copiar Empatia + Resolução"; }, 2000);
+  });
+});
+
+// ═══════════════════════════════════
+// ATALHO CTRL+ENTER
+// ═══════════════════════════════════
+document.addEventListener("keydown", function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    document.getElementById("btn-gerar").click();
+  }
+});
+
+// ═══════════════════════════════════
+// HISTÓRICO DA SESSÃO
+// ═══════════════════════════════════
+var historico = [];
+function addHistorico(dados) {
+  historico.unshift(dados);
+  if (historico.length > 5) historico.pop();
+  renderHistorico();
+}
+function renderHistorico() {
+  var el = document.getElementById("hist-list");
+  if (!historico.length) {
+    el.innerHTML = "<div class='hist-vazio'>Nenhuma reclamação gerada ainda nesta sessão.</div>";
+    return;
+  }
+  el.innerHTML = historico.map(function(h, i) {
+    return "<div class='hist-card' onclick='restaurarHistorico(" + i + ")'>"
+      + "<div class='hist-nome'>" + (h.nome || "Cliente não informado") + "</div>"
+      + "<div class='hist-info'>"
+      + (h.modelo ? "🚗 " + h.modelo + " &nbsp;|&nbsp; " : "")
+      + (h.canal ? "📱 " + h.canal + " &nbsp;|&nbsp; " : "")
+      + "🕐 " + h.hora
+      + "</div></div>";
+  }).join("");
+}
+function restaurarHistorico(idx) {
+  var h = historico[idx];
+  if (!h) return;
+  if (!confirm("Restaurar os dados desta reclamação no formulário?")) return;
+  if (h.nome) document.getElementById("f-nome").value = h.nome;
+  if (h.cpf) document.getElementById("f-cpf").value = h.cpf;
+  if (h.tel) document.getElementById("f-tel").value = h.tel;
+  if (h.id) document.getElementById("f-id").value = h.id;
+  if (h.chassi) document.getElementById("f-chassi").value = h.chassi;
+  if (h.placa) document.getElementById("f-placa").value = h.placa;
+  if (h.desc) { document.getElementById("f-desc").value = h.desc; document.getElementById("f-desc").dispatchEvent(new Event("input")); }
+}
+document.getElementById("btn-limpar-hist").addEventListener("click", function() {
+  historico = []; renderHistorico();
+});
+
 // Estado
 var sel = { conc: ["CV 1"], canal: ["RECLAME AQUI"], grupo: [] };
 var dests = [];
@@ -846,7 +1008,7 @@ document.querySelectorAll(".tab").forEach(function(t) {
     var tab = this.getAttribute("data-tab");
     document.querySelectorAll(".tab").forEach(function(x) { x.classList.remove("on"); });
     this.classList.add("on");
-    ["wpp","email","ac","resp","gar","unid","cred"].forEach(function(p) {
+    ["wpp","email","ac","resp","gar","unid","cred","hist"].forEach(function(p) {
       var el = document.getElementById("panel-" + p);
       if (el) el.style.display = p === tab ? "" : "none";
     });
@@ -959,6 +1121,12 @@ document.getElementById("btn-gerar").addEventListener("click", function() {
   document.getElementById("out-email").textContent = corpo;
 
   acOk = false; respOk = false;
+  // Adicionar ao histórico
+  var hora = new Date().toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"});
+  addHistorico({nome:nome, cpf:cpf, tel:tel, id:id, chassi:chassi, modelo:modelo, placa:placa, desc:desc, canal:canal, hora:hora});
+  // Badge exportar
+  var badge = document.getElementById("exp-badge");
+  badge.classList.add("show");
   var outAc = document.getElementById("out-ac");
   outAc.className = "out spin";
   outAc.innerHTML = '<span class="spinner"></span> Clique na aba Acionamento para gerar...';
@@ -970,7 +1138,7 @@ document.getElementById("btn-gerar").addEventListener("click", function() {
 
   document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("on"); });
   document.querySelector(".tab[data-tab='wpp']").classList.add("on");
-  ["wpp","email","ac","resp","gar","unid","cred"].forEach(function(p) {
+  ["wpp","email","ac","resp","gar","unid","cred","hist"].forEach(function(p) {
     var el = document.getElementById("panel-" + p);
     if (el) el.style.display = p === "wpp" ? "" : "none";
   });
@@ -1159,8 +1327,16 @@ document.getElementById("btn-add-q").addEventListener("click", function() {
     QUANTIDADE: 1
   });
   updateQueue();
+  var badge = document.getElementById("exp-badge");
+  badge.textContent = queue.length;
+  badge.classList.add("show");
 });
-document.getElementById("btn-clr-q").addEventListener("click", function() { queue = []; updateQueue(); });
+document.getElementById("btn-clr-q").addEventListener("click", function() {
+  queue = []; updateQueue();
+  var badge = document.getElementById("exp-badge");
+  badge.textContent = "0";
+  badge.classList.remove("show");
+});
 document.getElementById("btn-exp").addEventListener("click", function() {
   if (!queue.length) { alert("Adicione pelo menos uma reclamacao a fila!"); return; }
   var cols = ["PLATAFORMA","Mes avaliado","Nota Avaliada","Cliente","STATUS","Data Cadastro","LOJA","PENDENCIAS","Area","PLACA","MODELO","QUANTIDADE"];

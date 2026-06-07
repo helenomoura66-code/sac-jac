@@ -104,12 +104,53 @@ textarea{resize:vertical;min-height:88px}
 .eq-cnt{font-family:var(--mono);font-size:11px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:10px;margin-left:7px}
 .eq-list{font-family:var(--mono);font-size:12px;color:var(--muted);max-height:110px;overflow-y:auto}
 @media(max-width:600px){
+  /* Layout geral */
   .g2,.g3,.resp-grid{grid-template-columns:1fr}
-  .wrap{padding:16px 14px 40px}
-  .card{padding:16px 14px}
-  .dest-row{flex-direction:column}
-  .hdr{padding:12px 14px}
+  .wrap{padding:12px 10px 60px}
+  .card{padding:14px 12px;margin-bottom:10px}
+  .hdr{padding:10px 12px;gap:8px}
   .hdr-v{display:none}
+  .hdr-title{font-size:13px}
+
+  /* Inputs e selects maiores para toque */
+  input,select,textarea{font-size:16px;padding:10px 12px}
+  textarea{min-height:100px}
+
+  /* Botões de grupo (concessionaria, canal etc) */
+  .bgrp{gap:5px}
+  .tbtn{padding:8px 11px;font-size:12px;flex:1;min-width:calc(33% - 5px);text-align:center}
+
+  /* Botão gerar */
+  .gen-btn{padding:16px;font-size:15px;position:sticky;bottom:12px;z-index:10;box-shadow:0 4px 16px rgba(200,65,10,.35)}
+
+  /* Resultados */
+  .tabs{gap:0}
+  .tab{padding:10px 12px;font-size:12px;flex:1;text-align:center}
+  .out{font-size:13px;padding:12px}
+  .cbtn{padding:10px 14px;font-size:13px}
+  .brow{flex-wrap:wrap;gap:6px}
+
+  /* Fila exportacao */
+  .eq-hdr{flex-direction:column;gap:8px;align-items:flex-start}
+  .eq-hdr > div:last-child{width:100%;display:flex;gap:6px}
+  .eq-hdr .cbtn{flex:1;text-align:center}
+
+  /* Importar conversa */
+  .imp-row{flex-direction:column;align-items:flex-start;gap:8px}
+  .imp-btn{width:100%;justify-content:center;padding:12px}
+  .imp-textarea{font-size:15px}
+
+  /* Responsáveis */
+  .dest-row{flex-direction:column;gap:8px}
+  .rm-btn{width:100%;text-align:center}
+  .add-btn{padding:12px;font-size:13px}
+
+  /* Cards de resposta ao cliente */
+  .tone-row{flex-wrap:wrap}
+  .tone-btn{flex:1;min-width:calc(50% - 6px);text-align:center;padding:9px}
+
+  /* Seção labels */
+  .sec{font-size:10px}
 }
 </style>
 </head>

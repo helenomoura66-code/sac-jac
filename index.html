@@ -913,7 +913,7 @@ document.getElementById("btn-gerar").addEventListener("click", function() {
 
 // API
 function callAI(prompt, maxTok, cb) {
-  fetch("/.netlify/functions/ai", {
+  fetch("https://sac-jac-ai.helenomoura66.workers.dev", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ model: "gpt-4o", max_tokens: maxTok, messages: [{ role: "user", content: prompt }] })

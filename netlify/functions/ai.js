@@ -28,22 +28,33 @@ exports.handler = async function(event) {
       return { role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] };
     });
 
-    var resp = await fetch(
+    // Tentar com v1beta primeiro, depois v1 como fallback
+    var urls = [
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey,
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey,
-      {
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + apiKey
+    ];
+
+    var data = null;
+    var resp = null;
+
+    for (var i = 0; i < urls.length; i++) {
+      resp = await fetch(urls[i], {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: contents,
           generationConfig: { maxOutputTokens: body.max_tokens || 400 }
         })
-      }
-    );
-
-    var data = await resp.json();
+      });
+      data = await resp.json();
+      if (resp.ok) break;
+      // Se não for erro de modelo não encontrado, para
+      if (resp.status !== 404) break;
+    }
 
     if (!resp.ok) {
-      return { statusCode: resp.status, headers: headers, body: JSON.stringify({ content: [{ type: "text", text: "Erro API Gemini: " + JSON.stringify(data) }] }) };
+      return { statusCode: resp.status, headers: headers, body: JSON.stringify({ content: [{ type: "text", text: "Erro API Gemini (" + resp.status + "): " + JSON.stringify(data) }] }) };
     }
 
     var text = "";
